@@ -1,0 +1,119 @@
+<?php
+date_default_timezone_set('America/Denver');
+
+define('APP_RUNNING', true);
+
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+
+    include 'login.php';
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    exit;
+}
+
+$id = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = isset($_POST['id']) ? $_POST['id'] : null;
+}
+$name = "";
+
+include "check_credentials.php";
+
+if ($id == "" || $name == "") {
+    exit;
+}
+
+
+?>
+
+
+
+<html>
+
+<head>
+    <title>Work Scheduler</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const dayStart = 1;
+        const dayEnd = 6;
+        const timeStart = 6
+        const timeEnd = 23.5
+        const interval = 0.5; // not set up correctly
+        const stations = 2;
+        var date = new Date('<?php echo date('Y-m-d'); ?>');
+        var sunday = new Date(date);
+        var newReservations = [];
+        var removedReservations = [];
+        let reservations = <?php
+
+                            require '../new-scheduler/config.php';
+
+
+
+
+                            $sat = date('Y-m-d', strtotime('last saturday'));
+                            $sun = date('Y-m-d', strtotime('next sunday'));
+
+
+
+                            //PUT ID VERIFICATION HERE
+
+                            try {
+                                $conn = new PDO("mysql:host=$servername;dbname=u465799283_upgrade", $username, $password);
+                                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                                $sql = $conn->prepare("SELECT name, date, start, end, station FROM reservations WHERE date>:sat AND date<:sun");
+                                $sql->bindParam(':sat', $sat);
+                                $sql->bindParam(':sun', $sun);
+
+
+
+                                $sql->execute();
+
+                                $results = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+
+                                echo json_encode($results);
+                            } catch (PDOException $e) {
+                                echo "Connection failed: " . $e->getMessage();
+                            }
+
+
+
+                            $conn = null; ?>;
+        sunday.setDate(date.getDate() - date.getDay());
+
+        const id = <?php echo $id; ?>;
+        const username = "<?php echo $name; ?>";
+    </script>
+    <script src="config.js"></script>
+    <script src="script.js" defer></script>
+
+</head>
+
+<body>
+    <div id="arrows">
+        <button onClick="changeWeek(-1)"><i class="arrow left"></i></button>
+        <button onClick="changeWeek(1)"><i class=" arrow right"></i></button>
+    </div>
+    <div id="saved"></div>
+    <div id="limits"></div>
+    <div id="calendar">
+        <table id="table">
+            <thead>
+
+            </thead>
+
+            </thead>
+
+        </table>
+    </div>
+    <button onClick="sendReservations()">Submit</button>
+
+
+</body>
+
+</html>

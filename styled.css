@@ -1,0 +1,244 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: #1a202c;
+    line-height: 1.5;
+    padding: 1.5rem;
+}
+
+/* Container styling */
+#calendar {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Table styling */
+#table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+#table th,
+#table td {
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.9rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Header row */
+#headerRow {
+    background: #2d3748;
+    color: #ffffff;
+}
+
+#corner {
+    font-weight: 600;
+    background: #1a202c;
+}
+
+/* Time column */
+td[id^="time"] {
+    background: #edf2f7;
+    font-weight: 500;
+    width: 100px;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+/* Time slots */
+.timeSlot {
+    background: #ffffff;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.timeSlot:hover {
+    background: #f7fafc;
+}
+
+.timeSlot:not(:empty) {
+    background: #bee3f8;
+    font-weight: 500;
+    color: #2b6cb0;
+}
+
+/* Arrows navigation */
+#arrows {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+#arrows button {
+    background: #3182ce;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#arrows button:hover {
+    background: #2b6cb0;
+    transform: translateY(-1px);
+}
+
+#arrows button:active {
+    transform: translateY(0);
+}
+
+#arrows .arrow {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+#arrows .arrow.left {
+    border-width: 6px 8px 6px 0;
+    border-color: transparent #ffffff transparent transparent;
+}
+
+#arrows .arrow.right {
+    border-width: 6px 0 6px 8px;
+    border-color: transparent transparent transparent #ffffff;
+}
+
+/* Submit button */
+button[onclick="sendReservations()"] {
+    display: block;
+    margin: 1rem auto;
+    background: #48bb78;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button[onclick="sendReservations()"]:hover {
+    background: #38a169;
+    transform: translateY(-1px);
+}
+
+button[onclick="sendReservations()"]:active {
+    transform: translateY(0);
+}
+
+/* Saved notification */
+#saved {
+    text-align: center;
+    color: #38a169;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#saved:not(:empty) {
+    opacity: 1;
+}
+
+/* Limits section */
+#limits {
+    text-align: center;
+    color: #e53e3e;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+/* Calendar picker (retaining original rdp styles with enhancements) */
+.rdp {
+    --rdp-cell-size: 36px;
+    --rdp-accent-color: #3182ce;
+    --rdp-background-color: #e7edff;
+    --rdp-outline: 2px solid var(--rdp-accent-color);
+    --rdp-outline-selected: 2px solid #2d3748;
+    margin: 1rem auto;
+    max-width: 320px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rdp-caption_label {
+    font-size: 1.2rem;
+    color: #2d3748;
+}
+
+.rdp-nav_button {
+    background: #edf2f7;
+    transition: background-color 0.2s ease;
+}
+
+.rdp-nav_button:hover {
+    background: #e2e8f0;
+}
+
+.rdp-day_selected {
+    background-color: var(--rdp-accent-color);
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    #table {
+        font-size: 0.8rem;
+    }
+
+    td[id^="time"] {
+        width: 80px;
+    }
+
+    #table th,
+    #table td {
+        padding: 0.5rem;
+    }
+
+    #arrows button {
+        padding: 0.5rem 1rem;
+    }
+
+    button[onclick="sendReservations()"] {
+        padding: 0.5rem 1.5rem;
+    }
+
+    .rdp {
+        --rdp-cell-size: 32px;
+    }
+}
+
+/* Scrollable table for smaller screens */
+@media (max-width: 1024px) {
+    #calendar {
+        overflow-x: auto;
+    }
+
+    #table {
+        min-width: 1000px;
+    }
+}

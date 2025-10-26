@@ -33,7 +33,7 @@ foreach ($data as $reservation) {
     if (!isset($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end'], $reservation['station'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Missing required fields in reservation']);
-        exit;
+        continue;
     }
 
     $id = intval($reservation['id']);
@@ -48,19 +48,37 @@ foreach ($data as $reservation) {
     } catch (Exception $e) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid date/time: ' . $e->getMessage()]);
-        exit;
+        continue;
     }
 
     if (check($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end']) != 0) {
         echo json_encode(['error' => 'checks failed']);
-        exit;
+        continue;
     }
+
+
 
 
     try {
         $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
 
+
+
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $checkSql = $conn->prepare("SELECT COUNT(*) FROM reservations WHERE station = :station AND date = :date AND ((start <= :start AND end > :start) OR (start < :end AND end >= :end) OR (start >= :start AND end <= :end))");
+        $checkSql->bindParam(':date', $reservation['date']);
+        $checkSql->bindParam(':start', $reservation['start']);
+        $checkSql->bindParam(':end', $reservation['end']);
+        $checkSql->bindParam(':station', $reservation['station']);
+        $checkSql->execute();
+
+        if ($checkSql->fetchColumn() > 0) {
+            echo json_encode(['message' => 'Slot already reserved']);
+            continue;
+        }
+
+
         $sql = $conn->prepare("INSERT INTO reservations (code, name, date, start, end, station) VALUES (:code, :name, :date, :start, :end, :station)");
         $sql->bindParam(':code', $reservation['id']);
         $sql->bindParam(':name', $reservation['name']);

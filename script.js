@@ -1,6 +1,6 @@
 tab = document.getElementById("table");
 
-
+let seconds = 2;
 
 
 //constants needed: days array - array with days of week in order you want, 
@@ -109,6 +109,7 @@ function addName() {
 
     if (this.innerHTML == "" && ok) {
         this.innerHTML = username;
+        this.classList.add('user');
         removedReservations = removedReservations.filter(item => item !== this.id);
         newReservations.push(this.id);
     }
@@ -117,6 +118,7 @@ function addName() {
     }
     else if (this.innerHTML == username) {
         newReservations = newReservations.filter(item => item !== this.id);
+        this.classList.remove('user');
         removedReservations.push(this.id);
         this.innerHTML = "";
     }
@@ -311,6 +313,15 @@ function getReservations() {
 
 function updateCalendar() {
     console.log("updating calendar");
+
+    // Convert HTMLCollection to an array to avoid live collection issues
+    const officials = Array.from(document.getElementsByClassName('official'));
+
+    for (const item of officials) {
+        item.classList.remove('official');
+        item.innerHTML = ''; // or item.textContent = '' for safer clearing
+    }
+
     for (let i = 0; i < reservations.length; i++) {
         let res = reservations[i];
         let day = new Date(res.date);
@@ -323,9 +334,12 @@ function updateCalendar() {
         let endTimeIndex = endTimeHour + (endTimeMin == 30 ? .5 : 0);
 
 
+
+
         console.log((dayIndex) + "-" + startTimeIndex + "-" + res.station);
         document.getElementById((dayIndex) + "-" + startTimeIndex + "-" + res.station).innerHTML = res.name;
-
+        document.getElementById((dayIndex) + "-" + startTimeIndex + "-" + res.station).classList.add('official');
+        document.getElementById((dayIndex) + "-" + startTimeIndex + "-" + res.station).classList.remove('user');
         //in future add ability to show multi-slot reservations/wrong interval reservations
 
 
@@ -335,7 +349,25 @@ function updateCalendar() {
 function clearCalendar() {
     document.querySelectorAll('.timeSlot').forEach(element => {
         element.innerHTML = "";
+        element.classList.remove("user");
+        element.classList.remove("official");
     })
 }
 
 updateCalendar();
+
+let counter = 0;
+const stopwatch = setInterval(() => {
+
+    if (counter >= seconds) {
+        counter = 0;
+        console.log("load");
+        getReservations();
+
+        if (newReservations.length > 0 || removedReservations.length > 0) {
+            sendReservations();
+        }
+
+    }
+    counter++;
+}, 1000);

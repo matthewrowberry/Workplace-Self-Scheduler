@@ -44,26 +44,30 @@ if ($id == "" || $name == "") {
         const timeEnd = 23.5
         const interval = 0.5; // not set up correctly
         const stations = 2;
-        var date = new Date('<?php echo date('Y-m-d'); ?>');
+        var date = new Date('<?php echo (date('N') == 6) ? date('Y-m-d', strtotime('+1 week')) : date('Y-m-d'); ?>');
         var sunday = new Date(date);
         var newReservations = [];
         var removedReservations = [];
         let reservations = <?php
 
-                            require '../new-scheduler/config.php';
+                            require 'config.php';
 
 
 
 
-                            $sat = date('Y-m-d', strtotime('last saturday'));
-                            $sun = date('Y-m-d', strtotime('next sunday'));
-
-
+                            $today = date('N'); // Get day of the week (1 = Monday, 6 = Saturday, 7 = Sunday)
+                            if ($today == 6) {
+                                $sat = date('Y-m-d', strtotime('today')); // Tomorrow (e.g., October 12, 2025)
+                                $sun = date('Y-m-d', strtotime('tomorrow +1 week')); // One week from tomorrow (e.g., October 19, 2025)
+                            } else {
+                                $sat = date('Y-m-d', strtotime('last saturday')); // Last Saturday
+                                $sun = date('Y-m-d', strtotime('next sunday')); // Next Sunday
+                            }
 
                             //PUT ID VERIFICATION HERE
 
                             try {
-                                $conn = new PDO("mysql:host=$servername;dbname=u465799283_upgrade", $username, $password);
+                                $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
                                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                                 $sql = $conn->prepare("SELECT name, date, start, end, station FROM reservations WHERE date>:sat AND date<:sun");
                                 $sql->bindParam(':sat', $sat);
@@ -104,8 +108,6 @@ if ($id == "" || $name == "") {
     <div id="calendar">
         <table id="table">
             <thead>
-
-            </thead>
 
             </thead>
 

@@ -68,6 +68,15 @@ foreach ($data as $reservation) {
 
 
         $sql->execute();
+
+        $sql = $conn->prepare("INSERT INTO deletedReservations (code, name, date, start, end, station) VALUES (:code, :name, :date, :start, :end, :station)");
+        $sql->bindParam(':code', $reservation['id']);
+        $sql->bindParam(':name', $reservation['name']);
+        $sql->bindParam(':date', $reservation['date']);
+        $sql->bindParam(':start', $reservation['start']);
+        $sql->bindParam(':end', $reservation['end']);
+        $sql->bindParam(':station', $reservation['station']);
+
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }

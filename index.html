@@ -1,0 +1,51 @@
+<html>
+
+<head>
+    <title>Work Scheduler</title>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const dayStart = 1;
+        const dayEnd = 6;
+        const timeStart = 6
+        const timeEnd = 23.5
+        const interval = 0.5; // not set up correctly
+        const stations = 2;
+        var date = new Date();
+        var sunday = new Date(date);
+        var changes = [];
+        let reservations = [];
+        sunday.setDate(date.getDate() - date.getDay());
+
+        const id = 4653;
+        const username = "Matthew Rowberry";
+
+    </script>
+    <script src="config.js"></script>
+    <script src="script.js" defer></script>
+
+</head>
+
+<body>
+    <div id="arrows">
+        <button onClick="changeWeek(-1)"><i class="arrow left"></i></button>
+        <button onClick="changeWeek(1)"><i class=" arrow right"></i></button>
+    </div>
+    <div id="saved"></div>
+    <div id="limits"></div>
+    <div id="calendar">
+        <table id="table">
+            <thead>
+
+            </thead>
+
+            </thead>
+
+        </table>
+    </div>
+    <button onClick="sendReservations()">Submit</button>
+    <button onClick="getReservations()">Get Reservations</button>
+
+</body>
+
+</html>

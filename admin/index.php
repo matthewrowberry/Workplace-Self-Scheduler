@@ -70,6 +70,7 @@ $conn = null;
                         <th>Previous days offset</th>
                         <th>Hours</th>
                         <th>Minutes</th>
+                        <th>Options</th>
                     </tr>
                 </thead>
                 <thead id="startRestrictionsBody">

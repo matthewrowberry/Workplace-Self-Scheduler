@@ -1,5 +1,5 @@
 <?php
-
+date_default_timezone_set('America/Denver');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -51,7 +51,7 @@ foreach ($data as $reservation) {
         continue;
     }
 
-    if (check($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end']) != 0) {
+    if (check($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end'], $reservation['station']) != 0) {
         echo json_encode(['error' => 'checks failed']);
         continue;
     }

@@ -1,0 +1,1 @@
+{"table":"reservations","creation_statement":"CREATE TABLE IF NOT EXISTS reservations (id INT AUTO_INCREMENT PRIMARY KEY, code INT, name VARCHAR(50), date DATE, start TIME, end TIME);"}

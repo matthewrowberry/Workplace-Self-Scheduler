@@ -20,7 +20,7 @@ function edit(id) {
     idNum.value = id;
 
     nameLabel = document.createElement("h4");
-    nameLabel.innerHTML = idToName.get(String(id)) ?? "Unknown";
+    nameLabel.innerHTML = idToName.get(String(id)) ?? "Default";
     form.appendChild(nameLabel);
     idNum.disabled = true;
     idNum.id = "editorID";
@@ -146,7 +146,7 @@ function addExistingRestrictions() {
         console.log(restriction.prevDayOffset);
         console.log(restriction.hour);
         console.log(restriction.minute);
-        let name = idToName.get(String(restriction.id)) ?? "Unknown";
+        let name = idToName.get(String(restriction.id)) ?? "Default";
         const newRow = document.createElement("tr");
         const nameCell = document.createElement("td");
         nameCell.innerHTML = name;

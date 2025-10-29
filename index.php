@@ -99,12 +99,41 @@ if ($id == "" || $name == "") {
 </head>
 
 <body>
-    <div id="arrows">
-        <button onClick="changeWeek(-1)"><i class="arrow left"></i></button>
-        <button onClick="changeWeek(1)"><i class=" arrow right"></i></button>
+    <div id="top-bar">
+        <div id="status">
+            <span class="upload-status-indicator"></span>
+            <p id="status-text">Online</p>
+        </div>
+        <div id="arrows">
+            <button onClick="changeWeek(-1)"><i class="arrow left"></i></button>
+            <button onClick="changeWeek(1)"><i class=" arrow right"></i></button>
+        </div>
+        <div id="restrictions">
+            <button class="restriction-indicator" aria-describedby="restriction-tooltip" aria-expanded="false">
+                <span class="restriction-indicator"></span> Errors
+            </button>
+
+            <div id="restriction-tooltip" class="restriction-tooltip" role="tooltip">
+                1 Restriction
+            </div>
+
+            <div class="restriction-panel" hidden>
+                <ul id="error-list" class="restriction-list" aria-live="polite">
+                </ul>
+            </div>
+        </div>
     </div>
-    <div id="saved"></div>
-    <div id="limits"></div>
+    <div id="alert-overlay" class="alert-overlay">
+        <div class="alert-box" role="dialog" aria-modal="true" aria-labelledby="alert-title">
+            <button class="alert-close" aria-label="Close">x</button>
+            <h2 id="alert-title">Notice</h2>
+            <p id="alert-text">Something went wrong</p>
+        </div>
+    </div>
+    <div id="limits">
+        <p><?php require 'restriction.php';
+            echo getScheduleTime($id); ?></p>
+    </div>
     <div id="calendar">
         <table id="table">
             <thead>
@@ -113,7 +142,7 @@ if ($id == "" || $name == "") {
 
         </table>
     </div>
-    <button onClick="sendReservations()">Submit</button>
+
 
 
 </body>

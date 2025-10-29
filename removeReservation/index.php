@@ -1,5 +1,6 @@
 <?php
 
+date_default_timezone_set('America/Denver');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -27,12 +28,18 @@ if (!is_array($data)) {
 
 require '../config.php';
 
-foreach ($data as $reservation) {
+$now = new DateTime(); // Current date and time
+$sqlDateTime = $now->format('Y-m-d H:i:s'); // 2025-10-28 14:30:45
+
+$results = [];
+
+foreach ($data as $index => $reservation) {
+    $result = ['index' => $index];
 
     if (!isset($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end'], $reservation['station'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Missing required fields in reservation']);
-        exit;
+        $result['error'] = 'Malformed Removal Request (Error 808)';
+        $results[] = $result;
+        continue;
     }
 
     $id = intval($reservation['id']);
@@ -44,10 +51,12 @@ foreach ($data as $reservation) {
         if (!$start || !$end) {
             throw new Exception('Invalid time format');
         }
+        $startStr = $start->format('H:i:s');
+        $endStr = $end->format('H:i:s');
     } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid date/time: ' . $e->getMessage()]);
-        exit;
+        $result['error'] = 'Malformed Removal Request (Error 809)';
+        $results[] = $result;
+        continue;
     }
 
 
@@ -61,24 +70,29 @@ foreach ($data as $reservation) {
         $sql->bindParam(':code', $reservation['id']);
         $sql->bindParam(':name', $reservation['name']);
         $sql->bindParam(':date', $reservation['date']);
-        $sql->bindParam(':start', $reservation['start']);
-        $sql->bindParam(':end', $reservation['end']);
+        $sql->bindParam(':start', $startStr);
+        $sql->bindParam(':end', $endStr);
         $sql->bindParam(':station', $reservation['station']);
-
-
-
         $sql->execute();
 
-        $sql = $conn->prepare("INSERT INTO deletedReservations (code, name, date, start, end, station) VALUES (:code, :name, :date, :start, :end, :station)");
+        $sql = $conn->prepare("INSERT INTO deletedReservations (code, name, date, start, end, station, changed) VALUES (:code, :name, :date, :start, :end, :station, :changed)");
         $sql->bindParam(':code', $reservation['id']);
         $sql->bindParam(':name', $reservation['name']);
         $sql->bindParam(':date', $reservation['date']);
-        $sql->bindParam(':start', $reservation['start']);
-        $sql->bindParam(':end', $reservation['end']);
+        $sql->bindParam(':start', $startStr);
+        $sql->bindParam(':end', $endStr);
         $sql->bindParam(':station', $reservation['station']);
+        $sql->bindParam(':changed', $sqlDateTime);
 
+        $sql->execute();
+
+        $result['success'] = true;
+        $result['message'] = 'Reservation removed successfully';
+        $results[] = $result;
     } catch (PDOException $e) {
-        echo "Connection failed: " . $e->getMessage();
+        $result['error'] = "Database error";
+        $results[] = $result;
+        
     }
 }
 
@@ -89,4 +103,6 @@ foreach ($data as $reservation) {
 $conn = null;
 
 http_response_code(200);
-echo json_encode(['message' => 'Reservations deleted successfully']);
+echo json_encode(['results' => $results]);
+
+exit;

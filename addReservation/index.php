@@ -28,11 +28,14 @@ if (!is_array($data)) {
 require '../config.php';
 require 'check.php';
 
-foreach ($data as $reservation) {
+$results = [];
+
+foreach ($data as $index => $reservation) {
+    $result = ['index' => $index];
 
     if (!isset($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end'], $reservation['station'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Missing required fields in reservation']);
+        $result['error'] = 'Malformed Submission (Error 808)';
+        $results[] = $result;
         continue;
     }
 
@@ -45,14 +48,23 @@ foreach ($data as $reservation) {
         if (!$start || !$end) {
             throw new Exception('Invalid time format');
         }
+        $startStr = $start->format('H:i:s');
+        $endStr = $end->format('H:i:s');
     } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid date/time: ' . $e->getMessage()]);
+        $result['error'] = 'Malformed Submission (Error 809)';
+        $results[] = $result;
         continue;
     }
 
-    if (check($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end'], $reservation['station']) != 0) {
-        echo json_encode(['error' => 'checks failed']);
+    $checkResult = check($reservation['id'], $reservation['name'], $reservation['date'], $reservation['start'], $reservation['end'], $reservation['station']);
+    if ($checkResult != 0) {
+
+        if ($checkResult == 1) {
+            $result['error'] = 'You cannot sign up for this slot yet';
+        } else {
+            $result['error'] = 'Checks Failed';
+        }
+        $results[] = $result;
         continue;
     }
 
@@ -61,20 +73,18 @@ foreach ($data as $reservation) {
 
     try {
         $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-
-
-
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $checkSql = $conn->prepare("SELECT COUNT(*) FROM reservations WHERE station = :station AND date = :date AND ((start <= :start AND end > :start) OR (start < :end AND end >= :end) OR (start >= :start AND end <= :end))");
         $checkSql->bindParam(':date', $reservation['date']);
-        $checkSql->bindParam(':start', $reservation['start']);
-        $checkSql->bindParam(':end', $reservation['end']);
+        $checkSql->bindParam(':start', $startStr);
+        $checkSql->bindParam(':end', $endStr);
         $checkSql->bindParam(':station', $reservation['station']);
         $checkSql->execute();
 
         if ($checkSql->fetchColumn() > 0) {
-            echo json_encode(['message' => 'Slot already reserved']);
+            $resultl['error'] = 'Slot already reserved';
+            $results[] = $result;
             continue;
         }
 
@@ -83,13 +93,18 @@ foreach ($data as $reservation) {
         $sql->bindParam(':code', $reservation['id']);
         $sql->bindParam(':name', $reservation['name']);
         $sql->bindParam(':date', $reservation['date']);
-        $sql->bindParam(':start', $reservation['start']);
-        $sql->bindParam(':end', $reservation['end']);
+        $sql->bindParam(':start', $startStr);
+        $sql->bindParam(':end', $endStr);
         $sql->bindParam(':station', $reservation['station']);
 
         $sql->execute();
+
+        $result['success'] = true;
+        $result['message'] = 'Reservation added successfully';
+        $results[] = $result;
     } catch (PDOException $e) {
-        echo "Connection failed: " . $e->getMessage();
+        $result['error'] = "Database error";
+        $results[] = $result;
     }
 }
 
@@ -100,4 +115,5 @@ foreach ($data as $reservation) {
 $conn = null;
 
 http_response_code(200);
-echo json_encode(['message' => 'Reservations added successfully']);
+echo json_encode(['results' => $results]);
+exit;

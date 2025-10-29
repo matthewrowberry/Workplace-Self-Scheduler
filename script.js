@@ -123,6 +123,9 @@ function addName() {
         this.innerHTML = "";
     }
 
+    document.querySelector('.upload-status-indicator').style.backgroundColor = '#ffeb3b';
+    document.getElementById('status-text').innerHTML = "Saving...";
+
 }
 
 function changeWeek(direction) {
@@ -145,7 +148,6 @@ function changeWeek(direction) {
     date = newDate;
 
     let headerCell = document.getElementById("corner");
-    console.log(date.getDay());
     headerCell.innerHTML = "Week of " + dateString(sunday);
     getReservations();
 }
@@ -163,8 +165,7 @@ function formatTime(hour) {
         return String(hour).padStart(2, '0') + ":00:00";
     }
     else {
-        console.log(hour);
-        console.log(hour - .5);
+
         return String(hour - .5).padStart(2, '0') + ":30:00";
 
     }
@@ -183,17 +184,11 @@ async function sendReservations() {
         data += "{\"id\": " + id + ", \"name\": \"" + username + "\",";
 
         let day = new Date(sunday);
-        console.log("0" + day.toDateString());
-        console.log(".5" + parseInt(cellId.slice(0, cellId.indexOf("-"))));
         day.setDate(sunday.getDate() + parseInt(cellId.slice(0, cellId.indexOf("-"))));
-        console.log("1" + day.toDateString());
         data += "\"date\": \"" + sqlDateString(day) + "\",";
         let time = cellId.slice(cellId.indexOf("-") + 1, cellId.lastIndexOf("-"));
-        console.log(time);
         data += "\"start\": \"" + formatTime(parseFloat(time)) + "\",";
-        console.log(time);
         time = parseFloat(time) + 0.5;
-        console.log(time);
         data += "\"end\": \"" + formatTime(parseFloat(time)) + "\",";
         data += "\"station\": " + cellId.slice(cellId.lastIndexOf("-") + 1) + "}";
 
@@ -207,7 +202,7 @@ async function sendReservations() {
     data += "]"
 
 
-
+    errored = false;
 
     fetch(url + "addReservation/index.php", {
         method: 'POST',
@@ -217,17 +212,29 @@ async function sendReservations() {
         body: data
     }).then(response => {
         if (!response.ok) {
+            alertUser("Error submitting", "There was an error submitting. Send this error to an admin: " + response.error);
             throw new Error('Network response was not ok');
         }
-        console.log(response);
         return response.json();
 
     }).then(data => {
-        console.log('Success:', data);
         newReservations = [];
+        data.results.forEach(result => {
+            if (result.error) {
+                errored = true;
+                list = document.getElementById("error-list");
+                error = document.createElement("li");
+                error.innerHTML = result.error;
+                list.appendChild(error);
+            }
 
-        document.getElementById("saved").innerHTML = "newReservations saved!";
+        })
+        if (errored) {
+            alertUser("Some or All slots not reserved", "Check Error menu for details");
+        }
     })
+
+
 
     data = "[";
     for (let i = 0; i < removedReservations.length; i++) {
@@ -235,17 +242,11 @@ async function sendReservations() {
         data += "{\"id\": " + id + ", \"name\": \"" + username + "\",";
 
         let day = new Date(sunday);
-        console.log("0" + day.toDateString());
-        console.log(".5" + parseInt(cellId.slice(0, cellId.indexOf("-"))));
         day.setDate(sunday.getDate() + parseInt(cellId.slice(0, cellId.indexOf("-"))));
-        console.log("1" + day.toDateString());
         data += "\"date\": \"" + sqlDateString(day) + "\",";
         let time = cellId.slice(cellId.indexOf("-") + 1, cellId.lastIndexOf("-"));
-        console.log(time);
         data += "\"start\": \"" + formatTime(parseFloat(time)) + "\",";
-        console.log(time);
         time = parseFloat(time) + 0.5;
-        console.log(time);
         data += "\"end\": \"" + formatTime(parseFloat(time)) + "\",";
         data += "\"station\": " + cellId.slice(cellId.lastIndexOf("-") + 1) + "}";
 
@@ -268,14 +269,11 @@ async function sendReservations() {
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
-        console.log(response);
         return response.json();
 
     }).then(data => {
-        console.log('Success:', data);
         removedReservations = [];
 
-        document.getElementById("saved").innerHTML = "newReservations saved!";
         getReservations();
     })
 
@@ -296,15 +294,14 @@ function getReservations() {
         body: "{\"id\": \"" + id + "\", \"sat\": \"" + sqlDateString(sat) + "\", \"sun\": \"" + sqlDateString(endsun) + "\"}"
     }).then(response => {
         if (!response.ok) {
+            document.querySelector('.upload-status-indicator').style.backgroundColor = '#f44336';
+            document.getElementById('status-text').innerHTML = "Offline";
             throw new Error('Network response was not ok');
         }
-        console.log(response);
         return response.json();
 
     }).then(data => {
-        console.log('Success:', data);
         reservations = data
-        console.log(reservations);
         updateCalendar();
     })
 
@@ -312,7 +309,6 @@ function getReservations() {
 }
 
 function updateCalendar() {
-    console.log("updating calendar");
 
     // Convert HTMLCollection to an array to avoid live collection issues
     const officials = Array.from(document.getElementsByClassName('official'));
@@ -336,12 +332,22 @@ function updateCalendar() {
 
 
 
-        console.log((dayIndex) + "-" + startTimeIndex + "-" + res.station);
         document.getElementById((dayIndex) + "-" + startTimeIndex + "-" + res.station).innerHTML = res.name;
         document.getElementById((dayIndex) + "-" + startTimeIndex + "-" + res.station).classList.add('official');
         document.getElementById((dayIndex) + "-" + startTimeIndex + "-" + res.station).classList.remove('user');
         //in future add ability to show multi-slot reservations/wrong interval reservations
 
+
+    }
+
+    const element = document.querySelector('.user');
+    if (element !== null) {
+        document.querySelector('.upload-status-indicator').style.backgroundColor = '#f44336';
+        document.getElementById('status-text').innerHTML = "Not Saved";
+
+    } else {
+        document.querySelector('.upload-status-indicator').style.backgroundColor = '#4CAF50';
+        document.getElementById('status-text').innerHTML = "Saved";
 
     }
 }
@@ -361,7 +367,6 @@ const stopwatch = setInterval(() => {
 
     if (counter >= seconds) {
         counter = 0;
-        console.log("load");
         getReservations();
 
         if (newReservations.length > 0 || removedReservations.length > 0) {
@@ -371,3 +376,47 @@ const stopwatch = setInterval(() => {
     }
     counter++;
 }, 1000);
+
+
+
+
+const indicator = document.querySelector('.restriction-indicator');
+const panel = document.querySelector('.restriction-panel');
+
+function togglePanel() {
+    const expanded = indicator.getAttribute('aria-expanded') === 'true';
+    indicator.setAttribute('aria-expanded', !expanded);
+    panel.hidden = expanded;
+}
+
+indicator.addEventListener('click', e => {
+    e.stopPropagation();
+    togglePanel();
+});
+
+document.addEventListener('click', () => {
+    if (!panel.hidden) {
+        indicator.setAttribute('aria-expanded', 'false');
+        panel.hidden = true;
+    }
+});
+
+const overlay = document.getElementById('alert-overlay');
+const closeBtn = overlay.querySelector('.alert-close');
+const alertTitle = document.getElementById('alert-title');
+const alertText = document.getElementById('alert-text');
+
+closeBtn.addEventListener('click', () => {
+    overlay.classList.remove('active');
+});
+
+overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('active');
+});
+
+function alertUser(title, string) {
+    alertTitle.innerHTML = title;
+    alertText.innerHTML = string;
+
+    overlay.classList.add('active');
+}

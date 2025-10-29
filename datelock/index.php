@@ -1,5 +1,6 @@
 <?php
-function checkAfter($dayOfWeek, $daysBefore, $hours, $minutes) {
+function checkAfter($dayOfWeek, $daysBefore, $hours, $minutes)
+{
     //I want to check if it's x days/hours/minutes beforethe yth day of the week
 
     date_default_timezone_set('America/Denver');
@@ -16,15 +17,12 @@ function checkAfter($dayOfWeek, $daysBefore, $hours, $minutes) {
     $date->sub($offset);
 
     //add the hours and minutes for the times
-    $offset = new DateInterval("P" . (string)$hours . "H" . (string)$minutes . "M");
+    $offset = new DateInterval("PT" . (string)$hours . "H" . (string)$minutes . "M");
 
     $date->add($offset);
 
     $now = new DateTime();
 
 
-    return $now>$date;
+    return $now > $date;
 }
-
-
-?>
